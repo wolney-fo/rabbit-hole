@@ -1,0 +1,94 @@
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/infra/database/prisma/generated"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Users {
+  id            String     @id
+  name          String     @db.Text
+  email         String
+  emailVerified Boolean    @default(false)
+  image         String?    @db.Text
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  sessions      Sessions[]
+  accounts      Accounts[]
+  files         File[]
+
+  role       String?   @db.Text
+  banned     Boolean?  @default(false)
+  banReason  String?   @db.Text
+  banExpires DateTime?
+
+  @@unique([email])
+  @@map("users")
+}
+
+model Sessions {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?  @db.Text
+  userAgent String?  @db.Text
+  userId    String
+  users     Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  impersonatedBy String? @db.Text
+
+  @@unique([token])
+  @@index([userId(length: 191)])
+  @@map("sessions")
+}
+
+model Accounts {
+  id                    String    @id
+  accountId             String    @db.Text
+  providerId            String    @db.Text
+  userId                String
+  users                 Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  idToken               String?   @db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?   @db.Text
+  password              String?   @db.Text
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId(length: 191)])
+  @@map("accounts")
+}
+
+model Verifications {
+  id         String   @id
+  identifier String   @db.Text
+  value      String   @db.Text
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier(length: 191)])
+  @@map("verifications")
+}
+
+model File {
+  id          String   @id
+  name        String
+  key         String
+  contentType String   @map("content_type")
+  createdAt   DateTime @default(now()) @map("created_at")
+  userId      String   @map("user_id")
+  user        Users    @relation(fields: [userId], references: [id])
+
+  @@index([userId(length: 191)])
+  @@map("files")
+}

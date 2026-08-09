@@ -16,7 +16,6 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["./src/*"],
-      "test/*": ["./test/*"],
     },
     "incremental": true,
     "skipLibCheck": true,
