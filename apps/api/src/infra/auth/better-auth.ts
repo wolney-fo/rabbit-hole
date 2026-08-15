@@ -29,7 +29,7 @@ function buildAuth({ appUrl, secret, prisma, hasher }: BuildAuthOptions) {
       database: {
         generateId: () => uuidv7(),
       },
-      cookiePrefix: '@rabbithole',
+      cookiePrefix: 'rabbithole',
     },
     emailAndPassword: {
       enabled: true,
