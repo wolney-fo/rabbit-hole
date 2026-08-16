@@ -11,7 +11,7 @@ interface GenerateDownloadUrlUseCaseRequest {
 
 type GenerateDownloadUrlUseCaseResponse = Either<
   ResourceNotFoundError,
-  { url: string }
+  { url: string; name: string; contentType: string }
 >
 
 @Injectable()
@@ -32,10 +32,13 @@ export class GenerateDownloadUrlUseCase {
 
     const { signedUrl } = await this.storage.getDownloadSignedUrl({
       fileKey: file.key,
+      fileName: file.name,
     })
 
     return right({
       url: signedUrl,
+      name: file.name,
+      contentType: file.contentType,
     })
   }
 }

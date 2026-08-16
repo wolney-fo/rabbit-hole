@@ -5,6 +5,7 @@ export interface UploadParams {
 
 export interface DownloadParams {
   fileKey: string
+  fileName: string
 }
 
 export abstract class Storage {

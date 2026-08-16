@@ -34,6 +34,8 @@ export class GetDownloadUrlController {
     return {
       data: {
         url: result.value.url,
+        name: result.value.name,
+        contentType: result.value.contentType,
       },
     }
   }

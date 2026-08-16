@@ -17,3 +17,11 @@ export const uploadUrlResponseSchema = z.object({
     url: z.url(),
   }),
 })
+
+export const downloadUrlResponseSchema = z.object({
+  data: z.object({
+    url: z.url(),
+    name: z.string(),
+    contentType: z.string(),
+  }),
+})

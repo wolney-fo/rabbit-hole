@@ -50,12 +50,16 @@ export class S3Storage implements Storage {
 
   async getDownloadSignedUrl({
     fileKey,
+    fileName,
   }: DownloadParams): Promise<{ signedUrl: string }> {
+    const sanitizedFileName = fileName.replace(/["\\]/g, '\\$&')
+
     const signedUrl = await getSignedUrl(
       this.client,
       new GetObjectCommand({
         Bucket: this.envService.get('AWS_S3_BUCKET'),
         Key: fileKey,
+        ResponseContentDisposition: `attachment; filename="${sanitizedFileName}"`,
       }),
       {
         expiresIn: 60 * 10, // 10 minutes in secconds
