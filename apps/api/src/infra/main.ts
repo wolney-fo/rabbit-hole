@@ -9,6 +9,15 @@ async function bootstrap() {
   })
 
   const envService = app.get(EnvService)
+
+  app.enableCors({
+    origin: envService.get('WEB_URL'),
+    methods: ['GET', 'POST'],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  })
+
   const port = envService.get('PORT')
 
   await app.listen(port)

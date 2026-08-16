@@ -10,16 +10,24 @@ import { Argon2Hasher } from '@/infra/cryptography/argon2-hasher'
 
 type BuildAuthOptions = {
   appUrl: string
+  webUrl: string
   secret: string
   prisma: PrismaClient
   hasher: Pick<Argon2Hasher, 'hash' | 'verify'>
 }
 
-function buildAuth({ appUrl, secret, prisma, hasher }: BuildAuthOptions) {
+function buildAuth({
+  appUrl,
+  webUrl,
+  secret,
+  prisma,
+  hasher,
+}: BuildAuthOptions) {
   return betterAuth({
     appName: 'Rabbit Hole',
     baseURL: appUrl,
     basePath: '/auth',
+    trustedOrigins: [webUrl],
     secret,
     database: prismaAdapter(prisma, {
       provider: 'mysql',
@@ -60,6 +68,7 @@ export function createAuth(
 ) {
   return buildAuth({
     appUrl: envService.get('APP_URL'),
+    webUrl: envService.get('WEB_URL'),
     secret: envService.get('BETTER_AUTH_SECRET'),
     prisma,
     hasher: argon2Hasher,
@@ -68,6 +77,7 @@ export function createAuth(
 
 export const auth = buildAuth({
   appUrl: process.env.APP_URL!,
+  webUrl: process.env.WEB_URL!,
   secret: process.env.BETTER_AUTH_SECRET!,
   prisma: new PrismaClient({
     adapter: new PrismaMariaDb(process.env.DATABASE_URL!),
