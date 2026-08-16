@@ -18,6 +18,7 @@ import {
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { authClient } from '@/lib/auth-client'
+import { Link } from '@tanstack/react-router'
 
 export function SignInForm() {
   const signInFormSchema = z.object({
@@ -87,7 +88,7 @@ export function SignInForm() {
                 Sign in
               </Button>
               <FieldDescription className="text-center">
-                Don&apos;t have an account? <a href="/sign-up">Sign up</a>
+                Don&apos;t have an account? <Link to="/sign-up">Sign up</Link>
               </FieldDescription>
             </Field>
 

@@ -19,6 +19,7 @@ import {
   FieldLabel,
 } from './ui/field'
 import { Input } from './ui/input'
+import { Link } from '@tanstack/react-router'
 
 export function SignUpForm() {
   const signUpFormSchema = z.object({
@@ -118,7 +119,7 @@ export function SignUpForm() {
                     Sign up
                   </Button>
                   <FieldDescription className="text-center">
-                    Already have an account? <a href="/sign-in">Sign in</a>
+                    Already have an account? <Link to="/sign-in">Sign in</Link>
                   </FieldDescription>
                 </Field>
 
