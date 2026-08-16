@@ -5,10 +5,20 @@ import { GetUploadUrlController } from './controllers/get-upload-url.controller'
 import { GenerateUploadUrlUseCase } from '@/domain/transfer/application/use-cases/generate-upload-url'
 import { GetDownloadUrlController } from './controllers/get-download-url.controller'
 import { GenerateDownloadUrlUseCase } from '@/domain/transfer/application/use-cases/generate-download-url'
+import { FetchUserUploadsController } from './controllers/fetch-user-uploads.controller'
+import { FetchUserUploadsUseCase } from '@/domain/transfer/application/use-cases/fetch-user-uploads'
 
 @Module({
   imports: [DatabaseModule, StorageModule],
-  controllers: [GetUploadUrlController, GetDownloadUrlController],
-  providers: [GenerateUploadUrlUseCase, GenerateDownloadUrlUseCase],
+  controllers: [
+    GetUploadUrlController,
+    GetDownloadUrlController,
+    FetchUserUploadsController,
+  ],
+  providers: [
+    GenerateUploadUrlUseCase,
+    GenerateDownloadUrlUseCase,
+    FetchUserUploadsUseCase,
+  ],
 })
 export class HttpModule {}

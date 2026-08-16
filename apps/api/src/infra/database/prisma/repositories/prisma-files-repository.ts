@@ -3,6 +3,7 @@ import { File } from '@/domain/transfer/enterprise/entities/file'
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../prisma.service'
 import { PrismaFileMapper } from '../mappers/prisma-file-mapper'
+import { PaginationParams } from '@/core/repositories/pagination-params'
 
 @Injectable()
 export class PrismaFilesRepository implements FilesRepository {
@@ -28,5 +29,25 @@ export class PrismaFilesRepository implements FilesRepository {
     }
 
     return PrismaFileMapper.toDomain(file)
+  }
+
+  async findManyByUserId(
+    userId: string,
+    { page }: PaginationParams,
+  ): Promise<File[]> {
+    const files = await this.prisma.file.findMany({
+      where: {
+        userId,
+      },
+      orderBy: {
+        id: 'desc',
+      },
+      take: 20,
+      skip: (page - 1) * 20,
+    })
+
+    return files.map((file) => {
+      return PrismaFileMapper.toDomain(file)
+    })
   }
 }
