@@ -34,7 +34,7 @@ export function SignInForm() {
     handleSubmit,
     register,
     setError,
-    formState: { errors, isSubmitting, isSubmitted },
+    formState: { errors, isSubmitting },
   } = useForm<SignInFormSchema>({
     resolver: zodResolver(signInFormSchema),
     defaultValues: {
@@ -84,7 +84,7 @@ export function SignInForm() {
               <FieldError>{errors.password?.message}</FieldError>
             </Field>
             <Field>
-              <Button type="submit" disabled={isSubmitting || isSubmitted}>
+              <Button type="submit" disabled={isSubmitting}>
                 Sign in
               </Button>
               <FieldDescription className="text-center">

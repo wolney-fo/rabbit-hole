@@ -22,4 +22,10 @@ export default defineConfig([
       },
     },
   },
+  {
+    files: ['src/routes/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])
