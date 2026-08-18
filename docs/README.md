@@ -12,6 +12,7 @@ Rabbit Hole is a weekend side project that reimplements the core idea behind [We
   - [Engineering](#engineering)
     - [Functional Requirements](#functional-requirements)
     - [Non-Functional Requirements](#non-functional-requirements)
+    - [Scale Assumptions and Capacity Estimates](#scale-assumptions-and-capacity-estimates)
     - [Business Rules](#business-rules)
   - [Getting Started](#getting-started)
     - [Prerequisites](#prerequisites)
@@ -57,9 +58,13 @@ Downloading a file:
 
 ### Functional Requirements
 
-- An authenticated user must be able to upload a file.
-- Any client, authenticated or not, must be able to download a shared file.
+1. **Upload a file**: given a file selected by an authenticated user => issue a pre-signed URL and let the bytes go straight from the client to object storage.
+2. **Download a file**: given a file's public id => issue a pre-signed URL and let the bytes go straight from object storage to the client, authenticated or not.
+
+Supporting requirements:
+
 - Users must be able to browse, manage and share the files they uploaded through a web interface.
+- Uploading requires an authenticated user; downloading a shared file does not — sharing only works if the recipient doesn't need an account.
 
 ### Non-Functional Requirements
 
@@ -67,7 +72,31 @@ Downloading a file:
 - File bytes must never be proxied through the API process; uploads and downloads must flow directly between the client and object storage.
 - The application must fail fast at startup if required environment variables are missing or invalid.
 - The object storage integration must be provider-agnostic, targeting any S3-compatible endpoint rather than being hard-coded to AWS.
-- Pre-signed URLs must have a short expiration window to limit exposure if a link is leaked or shared beyond its intended recipient.
+- Pre-signed URLs must have a short expiration window to limit exposure if a link is leaked or shared beyond its intended recipient; the current implementation expires them after 10 minutes.
+- A single pre-signed upload is bound to S3's 5 GB limit for a single `PUT` request, since multipart upload is not implemented.
+
+### Scale Assumptions and Capacity Estimates
+
+Rabbit Hole doesn't run under real production load, but the central architectural decision — the API only ever issues pre-signed URLs, it never touches file bytes — was made as if it had to. The estimates below make that reasoning concrete: they exist to show _why_ offloading the data path to object storage is what keeps this design viable, not just to fill out a template.
+
+**Assumptions**
+
+- 1,000,000 uploads per day
+- Average file size: 25 MB
+- Downloads-to-uploads ratio: 4:1 (a shared file is opened by ~4 recipients on average)
+- Capacity planning horizon: 5 years
+- A file metadata record (id, name, key, contentType, ownerId, createdAt) is ~300 bytes
+
+**Estimates**
+
+- Write operations (upload-URL requests): `1,000,000 / 24 / 60 / 60 ≈` **11.6 RPS**
+- Read operations (download-URL requests), 4:1 ratio: `11.6 * 4 ≈` **46.3 RPS**
+- Records stored over 5 years: `1,000,000 * 365 * 5 =` **1.825 billion rows**
+- Database size, metadata only: `1.825 billion * 300 bytes ≈` **547.5 GB**
+- Object storage volume over 5 years: `1,000,000 * 25 MB * 365 * 5 =` **45,625 TB (≈ 45.6 PB)**
+- API throughput avoided by not proxying bytes: `25 TB/day / 86,400s ≈` **289 MB/s (≈ 2.3 Gbps)** sustained, on average traffic alone
+
+The gap between the last two numbers is the entire argument for the architecture. 45.6 PB of file data flows directly between clients and object storage over that horizon, while the database the API actually queries on every request stays two orders of magnitude smaller, at ~550 GB of pure metadata — and that metadata table, not the file volume, is what the API's own scaling story has to account for. Had the API proxied file bytes instead of issuing pre-signed URLs, a single instance would need to sustain multi-gigabit throughput just for average traffic, with no burst headroom, turning a stateless, horizontally scalable service into a bandwidth bottleneck tied to disk and NIC capacity.
 
 ### Business Rules
 
